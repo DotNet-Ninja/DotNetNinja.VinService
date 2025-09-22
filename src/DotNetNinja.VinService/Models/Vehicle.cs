@@ -8,6 +8,15 @@ public class Vehicle: IModel
     public string DisplacementCC { get; set; } = string.Empty;
     public string DisplacementCI { get; set; } = string.Empty;
     public string DisplacementL { get; set; } = string.Empty;
+
+    public string Displacement => (!string.IsNullOrWhiteSpace(DisplacementL), !string.IsNullOrWhiteSpace(DisplacementCC), !string.IsNullOrWhiteSpace(DisplacementCI)) switch
+    {
+        (true, _, _) => $"{DisplacementL} L",
+        (_, true, _) => $"{DisplacementCC} cc",
+        (_, _, true) => $"{DisplacementCI} ci",
+        _ => string.Empty
+    };
+
     public string Doors { get; set; } = string.Empty;
     public string DriveType { get; set; } = string.Empty;
     public string DriverAssist { get; set; } = string.Empty;
@@ -35,7 +44,14 @@ public class Vehicle: IModel
     public string TransmissionStyle { get; set; } = string.Empty;
     public string Trim { get; set; } = string.Empty;
     public string Trim2 { get; set; } = string.Empty;
+
+    private string FullTrimString => string.IsNullOrWhiteSpace(Trim2) ? $"{Trim} " : $"{Trim} {Trim2} ";
+
+    private string EngineDesignation => $"{EngineConfiguration} {Displacement}".Trim();
+
     public string Turbo { get; set; } = string.Empty;
     public string VIN { get; set; } = string.Empty;
     public string Wheels { get; set; } = string.Empty;
+
+    public string YearMakeModelEngine => $"{ModelYear} {Make} {Model} {FullTrimString}{EngineDesignation}";
 }

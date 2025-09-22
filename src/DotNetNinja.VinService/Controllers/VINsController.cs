@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Text.Json;
 using DotNetNinja.VinService.Models;
+using DotNetNinja.VinService.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DotNetNinja.VinService.Controllers;
@@ -9,6 +10,14 @@ namespace DotNetNinja.VinService.Controllers;
 [Route("api/v1/[controller]")]
 public class VINsController: ControllerBase
 {
+    private readonly INhtsaUrlBuilder _urlBuilder;
+
+    public VINsController(INhtsaUrlBuilder urlBuilder)
+    {
+        _urlBuilder = urlBuilder;
+    }
+
+
     [HttpGet("{vin}", Name = "GetVIN")]
     public async Task<IActionResult> Get(string vin, CancellationToken ct = default)
     {
@@ -20,9 +29,10 @@ public class VINsController: ControllerBase
             return BadRequest("VIN must be between 11 and 17 characters (17 recommended).");
         }
         
-        // Example: https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVinValues/1HGCM82633A004352?format=json
-        var uri = $"https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVinValues/{Uri.EscapeDataString(vin)}?format=json";
+        // Build service url for vin
+        var uri = _urlBuilder.BuildUrl(vin);
 
+        // Fetch results
         using var resp = await http.GetAsync(uri, ct);
         if (!resp.IsSuccessStatusCode)
         {
@@ -37,6 +47,7 @@ public class VINsController: ControllerBase
             AllowTrailingCommas = true
         });
 
+        // Check for deserialization issues or no results
         if (nhtsa == null)
         {
             return StatusCode((int)HttpStatusCode.InternalServerError, "Failed to deserialize upstream vPIC response.");
@@ -47,6 +58,7 @@ public class VINsController: ControllerBase
             return NotFound();
         }
 
+        // Return the first result
         return Ok(nhtsa.Results[0]);
     }
 }

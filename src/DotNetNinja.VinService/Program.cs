@@ -16,6 +16,7 @@ public class Program
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
         builder.Services.AddSingleton<INhtsaUrlBuilder, NhtsaUrlBuilder>();
+        builder.Services.AddSingleton<IVinValidator, VinValidator>();
 
         var app = builder.Build();
 

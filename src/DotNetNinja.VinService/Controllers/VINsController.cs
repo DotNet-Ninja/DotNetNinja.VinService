@@ -10,10 +10,12 @@ namespace DotNetNinja.VinService.Controllers;
 [Route("api/v1/[controller]")]
 public class VINsController: ControllerBase
 {
+    private readonly IVinValidator _validator;
     private readonly INhtsaUrlBuilder _urlBuilder;
 
-    public VINsController(INhtsaUrlBuilder urlBuilder)
+    public VINsController(IVinValidator validator, INhtsaUrlBuilder urlBuilder)
     {
+        _validator = validator;
         _urlBuilder = urlBuilder;
     }
 
@@ -23,10 +25,10 @@ public class VINsController: ControllerBase
     {
         var http = new HttpClient();
 
-        // Basic sanity check; vPIC accepts partial VINs but most apps want full 17 chars
-        if (string.IsNullOrWhiteSpace(vin) || vin.Length is < 11 or > 17)
+        // Validate VIN
+        if (!_validator.IsValidVin(vin))
         {
-            return BadRequest("VIN must be between 11 and 17 characters (17 recommended).");
+            return BadRequest("VIN must be between 11 and 17 characters (17 recommended) and be a valid VIN.");
         }
         
         // Build service url for vin

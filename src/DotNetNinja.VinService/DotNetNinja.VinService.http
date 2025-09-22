@@ -1,0 +1,6 @@
+@DotNetNinja.VinService_HostAddress = http://localhost:5016
+
+GET {{DotNetNinja.VinService_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
